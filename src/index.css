@@ -1,0 +1,136 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+input, button, select, textarea {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+/* Mobile Navigation Styles */
+.mobile-nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.mobile-menu-overlay {
+  display: none;
+}
+
+@media (max-width: 820px) {
+  .mobile-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .desktop-nav {
+    display: none;
+  }
+
+  .desktop-nav.is-open {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    gap: 0.75rem;
+  }
+
+  .desktop-nav.is-open a,
+  .desktop-nav.is-open button {
+    width: 100%;
+    text-align: center;
+    padding: 0.7rem 1rem !important;
+  }
+}
+
+/* Mobile Table Responsiveness */
+@media (max-width: 640px) {
+  .responsive-table th,
+  .responsive-table td {
+    padding: 0.5rem 0.4rem !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+/* Print-Ready Styles for Official AMTMP ID Cards */
+@media print {
+  /* Hide all website layout, navigation, headers, footers, buttons, and dashboard controls */
+  header,
+  footer,
+  nav,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* When printing, hide all top-level body contents except the printable card container */
+  body * {
+    visibility: hidden;
+  }
+
+  #printable-id-card-area,
+  #printable-id-card-area * {
+    visibility: visible;
+  }
+
+  #printable-id-card-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .id-card-front,
+  .id-card-back {
+    page-break-inside: avoid !important;
+    box-shadow: none !important;
+    border: 2px solid #0e623a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
