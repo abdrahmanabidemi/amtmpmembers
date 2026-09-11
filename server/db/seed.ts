@@ -2,29 +2,47 @@ import { eq } from "drizzle-orm";
 import { getDb } from "./index.js";
 import { administrators, memberAccounts, members, registrationSequences } from "./schema.js";
 import { hashPassword } from "../auth/passwords.js";
+import { config } from "../config.js";
 
 export async function seedInitialData() {
   const db = await getDb();
 
   // 1. Seed initial Lead Administrator
-  const adminEmail = "admin@amtmp.org";
-  const existingAdmins = await (db as any)
-    .select()
+  // Check if ANY administrator already exists in the system
+  const allAdmins = await (db as any)
+    .select({ id: administrators.id })
     .from(administrators)
-    .where(eq(administrators.email, adminEmail))
     .limit(1);
 
-  if (!existingAdmins || existingAdmins.length === 0) {
-    const adminPasswordHash = await hashPassword("AdminPassword2026!");
-    await (db as any).insert(administrators).values({
-      name: "AMTMP Lead Administrator",
-      email: adminEmail,
-      passwordHash: adminPasswordHash,
-      accountStatus: "active",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    console.log("[Seed] Created default administrator: admin@amtmp.org / AdminPassword2026!");
+  if (!allAdmins || allAdmins.length === 0) {
+    const adminEmail = "admin@amtmp.org";
+    const initialPassword = (config.adminInitialPassword || "").trim();
+
+    if (!initialPassword) {
+      if (config.isProduction) {
+        throw new Error(
+          "[Security Error] ADMIN_INITIAL_PASSWORD environment variable is required to create the initial administrator in production."
+        );
+      }
+      console.warn(
+        "[Security Warning] No administrator exists and ADMIN_INITIAL_PASSWORD is not set. Skipping administrator creation."
+      );
+    } else {
+      if (initialPassword.length < 8) {
+        throw new Error("[Security Error] ADMIN_INITIAL_PASSWORD must be at least 8 characters long.");
+      }
+
+      const adminPasswordHash = await hashPassword(initialPassword);
+      await (db as any).insert(administrators).values({
+        name: "AMTMP Lead Administrator",
+        email: adminEmail,
+        passwordHash: adminPasswordHash,
+        accountStatus: "active",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      console.log(`[Seed] Created initial administrator: ${adminEmail} using ADMIN_INITIAL_PASSWORD`);
+    }
   }
 
   // 2. Seed initial Approved Member Account

@@ -22,7 +22,12 @@ export async function getDb(): Promise<AppDatabase> {
     poolInstance = new Pool({
       connectionString: config.databaseUrl,
       ssl: config.isProduction ? { rejectUnauthorized: false } : undefined,
+      max: config.isProduction ? 1 : 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
     });
+    // Ensure all tables and constraints exist on target database
+    await initPostgresSchema(poolInstance);
     dbInstance = drizzleNodePg(poolInstance, { schema });
     return dbInstance;
   }
@@ -31,14 +36,14 @@ export async function getDb(): Promise<AppDatabase> {
   if (!pgliteInstance) {
     pgliteInstance = new PGlite();
     // Initialize schema tables if running on PGlite
-    await initPgliteSchema(pgliteInstance);
+    await initPostgresSchema(pgliteInstance);
   }
   dbInstance = drizzlePglite(pgliteInstance, { schema });
   return dbInstance;
 }
 
-export async function initPgliteSchema(client: PGlite) {
-  await client.exec(`
+export async function initPostgresSchema(client: { query?: (...args: any[]) => Promise<any>; exec?: (sql: string) => Promise<any> }) {
+  const ddl = `
     CREATE TABLE IF NOT EXISTS administrators (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
@@ -112,7 +117,16 @@ export async function initPgliteSchema(client: PGlite) {
       recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE (member_id, month, year)
     );
-  `);
+  `;
+
+  if (typeof client.exec === "function") {
+    await client.exec(ddl);
+  } else if (typeof client.query === "function") {
+    await client.query(ddl);
+  }
 }
+
+// Alias for backward compatibility
+export const initPgliteSchema = initPostgresSchema;
 
 export { schema };
