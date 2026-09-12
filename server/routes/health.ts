@@ -16,6 +16,10 @@ healthRouter.get("/", async (_req, res) => {
     dbStatus = `error: ${err.message}`;
   }
 
+  const envKeys = Object.keys(process.env).filter(
+    (k) => k.includes("NETLIFY") || k.includes("DB") || k.includes("POSTGRES") || k.includes("ADMIN")
+  );
+
   return res.json({
     status: "healthy",
     system: "Association of Medical and Traditional Medicine Practitioners",
@@ -23,5 +27,10 @@ healthRouter.get("/", async (_req, res) => {
     timestamp: new Date().toISOString(),
     environment: config.env,
     database: dbStatus,
+    diagnostics: {
+      hasDatabaseUrl: Boolean(config.databaseUrl && config.databaseUrl.trim().length > 0),
+      hasAdminInitialPassword: Boolean(config.adminInitialPassword && config.adminInitialPassword.trim().length > 0),
+      detectedEnvKeys: envKeys,
+    },
   });
 });

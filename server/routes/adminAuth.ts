@@ -27,6 +27,21 @@ adminAuthRouter.post("/login", authRateLimiter, async (req, res, next) => {
     const cleanEmail = String(email).trim().toLowerCase();
     const db = await getDb();
 
+    // If no administrator exists in the database yet, attempt initial seed
+    const allAdmins = await (db as any)
+      .select({ id: administrators.id })
+      .from(administrators)
+      .limit(1);
+
+    if (!allAdmins || allAdmins.length === 0) {
+      try {
+        const { seedInitialData } = await import("../db/seed.js");
+        await seedInitialData();
+      } catch (seedErr: any) {
+        console.warn("[Admin Login Seed Notice]:", seedErr?.message || seedErr);
+      }
+    }
+
     // Query administrator by email
     const adminRows = await (db as any)
       .select()

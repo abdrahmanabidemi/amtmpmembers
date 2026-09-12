@@ -3,17 +3,30 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export function resolveDatabaseUrl(): string {
-  if (process.env.NETLIFY_DB_URL && process.env.NETLIFY_DB_URL.trim().length > 0) {
-    return process.env.NETLIFY_DB_URL.trim();
+  const directCandidates = [
+    process.env.NETLIFY_DB_URL,
+    process.env.DATABASE_URL,
+    process.env.NETLIFY_DATABASE_URL,
+    process.env.POSTGRES_URL,
+    process.env.POSTGRESQL_URL,
+    process.env.DB_URL,
+  ];
+
+  for (const candidate of directCandidates) {
+    if (candidate && candidate.trim().length > 0) {
+      return candidate.trim();
+    }
   }
-  if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0) {
-    return process.env.DATABASE_URL.trim();
-  }
-  if (process.env.NETLIFY_DATABASE_URL && process.env.NETLIFY_DATABASE_URL.trim().length > 0) {
-    return process.env.NETLIFY_DATABASE_URL.trim();
-  }
-  if (process.env.POSTGRES_URL && process.env.POSTGRES_URL.trim().length > 0) {
-    return process.env.POSTGRES_URL.trim();
+
+  // Check any environment variable containing DB_URL or DATABASE_URL that looks like a postgres URI
+  for (const [key, value] of Object.entries(process.env)) {
+    if (
+      (key.includes("DB_URL") || key.includes("DATABASE_URL") || key.includes("POSTGRES")) &&
+      typeof value === "string" &&
+      value.startsWith("postgres")
+    ) {
+      return value.trim();
+    }
   }
 
   return "";

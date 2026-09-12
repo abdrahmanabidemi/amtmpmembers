@@ -27,6 +27,15 @@ export async function getDb(): Promise<AppDatabase> {
     // Ensure all tables and constraints exist on target database
     await initPostgresSchema(poolInstance);
     dbInstance = drizzleNodePg(poolInstance, { schema });
+
+    // Seed initial baseline records if needed (safe non-blocking on missing admin password)
+    try {
+      const { seedInitialData } = await import("./seed.js");
+      await seedInitialData();
+    } catch (seedErr: any) {
+      console.warn("[AMTMP DB Init Seed Notice]:", seedErr?.message || seedErr);
+    }
+
     return dbInstance;
   }
 
