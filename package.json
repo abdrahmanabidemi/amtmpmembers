@@ -17,8 +17,6 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.2.14",
-    "@netlify/database": "^2.0.1",
-    "@netlify/functions": "^6.0.0",
     "@types/multer": "^2.2.0",
     "@types/qrcode": "^1.5.6",
     "@vitejs/plugin-react": "^4.3.1",

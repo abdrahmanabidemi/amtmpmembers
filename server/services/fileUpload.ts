@@ -5,9 +5,13 @@ import fs from "fs";
 export const MAX_PHOTO_SIZE = 2 * 1024 * 1024; // 2 MB
 export const UPLOAD_DIR = path.resolve(process.cwd(), "uploads", "passports");
 
-// Ensure upload directory exists
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// Ensure upload directory exists safely (no crash on read-only serverless environments)
+try {
+  if (!fs.existsSync(UPLOAD_DIR)) {
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  }
+} catch {
+  // Read-only filesystem in serverless container; ignored
 }
 
 // Storage engine

@@ -30,6 +30,13 @@ export async function getDb(): Promise<AppDatabase> {
     return dbInstance;
   }
 
+  // In production, require PostgreSQL / Netlify Database connection URL
+  if (config.isProduction) {
+    throw new Error(
+      "[Database Error] NETLIFY_DB_URL or DATABASE_URL environment variable is required in production. Embedded database is not allowed."
+    );
+  }
+
   // Fallback to embedded PGlite for self-contained testing and zero-setup local dev
   if (!pgliteInstance) {
     const { PGlite } = await import("@electric-sql/pglite");
