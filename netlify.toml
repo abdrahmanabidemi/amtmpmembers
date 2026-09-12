@@ -5,7 +5,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["@electric-sql/pglite", "pg", "bcryptjs", "@netlify/database"]
+  external_node_modules = ["pg", "bcryptjs"]
 
 [[redirects]]
   from = "/api/*"

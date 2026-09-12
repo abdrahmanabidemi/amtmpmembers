@@ -1,16 +1,14 @@
 import { drizzle as drizzleNodePg } from "drizzle-orm/node-postgres";
-import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import pg from "pg";
-import { PGlite } from "@electric-sql/pglite";
 import * as schema from "./schema.js";
 import { config } from "../config.js";
 
 const { Pool } = pg;
 
-export type AppDatabase = ReturnType<typeof drizzleNodePg<typeof schema>> | ReturnType<typeof drizzlePglite<typeof schema>>;
+export type AppDatabase = ReturnType<typeof drizzleNodePg<typeof schema>> | any;
 
 let dbInstance: AppDatabase | null = null;
-let pgliteInstance: PGlite | null = null;
+let pgliteInstance: any = null;
 let poolInstance: pg.Pool | null = null;
 
 export async function getDb(): Promise<AppDatabase> {
@@ -34,10 +32,15 @@ export async function getDb(): Promise<AppDatabase> {
 
   // Fallback to embedded PGlite for self-contained testing and zero-setup local dev
   if (!pgliteInstance) {
+    const { PGlite } = await import("@electric-sql/pglite");
+    const { drizzle: drizzlePglite } = await import("drizzle-orm/pglite");
     pgliteInstance = new PGlite();
     // Initialize schema tables if running on PGlite
     await initPostgresSchema(pgliteInstance);
+    dbInstance = drizzlePglite(pgliteInstance, { schema });
+    return dbInstance;
   }
+  const { drizzle: drizzlePglite } = await import("drizzle-orm/pglite");
   dbInstance = drizzlePglite(pgliteInstance, { schema });
   return dbInstance;
 }

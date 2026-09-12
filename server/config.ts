@@ -1,4 +1,6 @@
 import dotenv from "dotenv";
+import { getConnectionString } from "@netlify/database";
+
 dotenv.config();
 
 export function resolveDatabaseUrl(): string {
@@ -17,14 +19,12 @@ export function resolveDatabaseUrl(): string {
 
   // Try Netlify Database SDK getConnectionString()
   try {
-    // Dynamic access if available
-    const { getConnectionString } = require("@netlify/database");
     const conn = getConnectionString();
     if (conn && conn.trim().length > 0) {
       return conn.trim();
     }
   } catch {
-    // Not running in Netlify or @netlify/database could not find connection string
+    // Not running in Netlify or connection string not configured
   }
 
   return "";
